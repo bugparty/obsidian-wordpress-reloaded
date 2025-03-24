@@ -71,6 +71,11 @@ export interface WordpressPluginSettings {
   enableHtml: boolean;
 
   /**
+   * Whether to upload raw markdown content instead of converting to HTML.
+   */
+  uploadRawMarkdown: boolean;
+
+  /**
    * Whether media links should be replaced after uploading to WordPress.
    */
   replaceMediaLinks: boolean;
@@ -87,6 +92,7 @@ export const DEFAULT_SETTINGS: WordpressPluginSettings = {
   mathJaxOutputType: MathJaxOutputType.SVG,
   commentConvertMode: CommentConvertMode.Ignore,
   enableHtml: false,
+  uploadRawMarkdown: false,
   replaceMediaLinks: true,
 }
 
