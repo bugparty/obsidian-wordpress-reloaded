@@ -75,4 +75,4 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## License
 
-Same as the original plugin (please specify the license type)
+Apache License 2.0, same as the original plugin.

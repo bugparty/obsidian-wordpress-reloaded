@@ -30,7 +30,7 @@ export default class WordpressPlugin extends Plugin {
   private ribbonWpIcon: HTMLElement | null = null;
 
   async onload() {
-    console.log('loading obsidian-wordpress plugin');
+    console.log('loading obsidian-wordpress-reloaded plugin');
 
     await this.loadSettings();
     // lang should be load early, but after settings
