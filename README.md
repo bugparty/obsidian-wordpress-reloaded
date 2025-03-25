@@ -10,8 +10,6 @@ The original plugin is no longer actively maintained. This fork aims to:
 - Add new features
 - Provide active maintenance and support
 
-[<img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="BuyMeACoffee" width="100">](https://www.buymeacoffee.com/devbean)
-
 This plugin makes you publish Obsidian documents to WordPress.
 
 There are some introduction videos you can watch (from the original plugin):
