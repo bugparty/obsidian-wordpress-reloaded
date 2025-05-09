@@ -2,11 +2,8 @@ import { arrayBufferToBase64, request } from 'obsidian';
 import { isArray, isArrayBuffer, isBoolean, isDate, isNumber, isObject, isSafeInteger } from 'lodash-es';
 import { format, parse } from 'date-fns';
 import { SafeAny } from './utils';
-
-interface XmlRpcOptions {
-  url: URL;
-  xmlRpcPath: string;
-}
+import { XmlRpcOptions } from './types';
+import { Logger } from './logger';
 
 export class XmlRpcClient {
 
@@ -27,7 +24,7 @@ export class XmlRpcClient {
   constructor(
     private readonly options: XmlRpcOptions
   ) {
-    console.log(options);
+    Logger.log(options);
 
     this.href = this.options.url.href;
     if (this.href.endsWith('/')) {
@@ -51,9 +48,9 @@ export class XmlRpcClient {
   ): Promise<unknown> {
     const xml = this.objectToXml(method, params);
     if (method === 'wp.uploadFile') {
-      console.log(`Endpoint: ${this.endpoint}, ${method}, requestSize: ${xml.length}`, params);
-    }else{
-      console.log(`Endpoint: ${this.endpoint},${method}, request: ${xml}`, params);
+      Logger.log(`Endpoint: ${this.endpoint}, ${method}, requestSize: ${xml.length}`, params);
+    } else {
+      Logger.log(`Endpoint: ${this.endpoint},${method}, request: ${xml}`, params);
     }
     
     return request({
