@@ -3,7 +3,7 @@ import WordpressPlugin from './main';
 import { WpProfile } from './wp-profile';
 import { openProfileModal } from './wp-profile-modal';
 import { isNil } from 'lodash-es';
-import { rendererProfile } from './utils';
+import { rendererProfile, showError } from './utils';
 import { AbstractModal } from './abstract-modal';
 import { Logger } from './logger';
 
@@ -35,7 +35,10 @@ export class WpProfileManageModal extends AbstractModal {
                 this.profiles.forEach(it => it.isDefault = false);
                 profile.isDefault = true;
                 renderProfiles();
-                this.plugin.saveSettings().then();
+                this.plugin.saveSettings().catch(err => {
+                  Logger.error('Failed to save settings:', err);
+                  showError(err);
+                });
               }));
         }
         setting.addButton(button => button
@@ -53,7 +56,10 @@ export class WpProfileManageModal extends AbstractModal {
               }
               this.profiles[atIndex] = newProfile;
               renderProfiles();
-              this.plugin.saveSettings().then();
+              this.plugin.saveSettings().catch(err => {
+                Logger.error('Failed to save settings:', err);
+                showError(err);
+              });
             }
           }));
         setting.addExtraButton(button => button
@@ -67,7 +73,10 @@ export class WpProfileManageModal extends AbstractModal {
               }
             }
             renderProfiles();
-            this.plugin.saveSettings().then();
+            this.plugin.saveSettings().catch(err => {
+              Logger.error('Failed to save settings:', err);
+              showError(err);
+            });
           }));
       });
     }
