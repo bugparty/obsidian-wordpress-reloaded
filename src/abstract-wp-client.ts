@@ -211,8 +211,9 @@ export abstract class AbstractWordPressClient implements WordPressClient {
           img.src = decodeURI(img.src);
           const fileName = img.src.split("/").pop();
 
-          if ( fileName === undefined )
+          if ( fileName === undefined ) {
             continue;
+          }
 
           const normPath = this.plugin.app.metadataCache.getFirstLinkpathDest(img.src, fileName);
 

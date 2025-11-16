@@ -224,7 +224,9 @@ export class WpPublishModal extends AbstractModal {
                 }
               });
           } else {
-            this.onSubmit(params, fm => {});
+            this.onSubmit(params, () => {
+              // No frontmatter modifications needed
+            });
           }
         })
       );

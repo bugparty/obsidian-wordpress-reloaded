@@ -39,6 +39,7 @@
 		"builtin-modules": "^3.2.0",
 		"date-fns": "^2.28.0",
 		"esbuild": "0.17.3",
+		"eslint": "^8.57.1",
 		"eslint-plugin-node": "^11.1.0",
 		"file-type-checker": "^1.0.8",
 		"imask": "^7.2.1",

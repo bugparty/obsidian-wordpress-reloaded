@@ -6,6 +6,7 @@ export class Logger {
 
   static log(...args: unknown[]): void {
     if (!Logger.isProduction) {
+      // eslint-disable-next-line no-console
       console.log(...args);
     }
   }

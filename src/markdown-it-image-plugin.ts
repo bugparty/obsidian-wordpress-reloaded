@@ -16,7 +16,9 @@ interface MarkdownItImagePluginOptions {
 }
 
 const pluginOptions: MarkdownItImagePluginOptions = {
-  doWithImage: () => {},
+  doWithImage: () => {
+    // Default no-op implementation, will be overridden by MarkdownItImagePluginInstance.doWithImage
+  },
 }
 
 export const MarkdownItImagePluginInstance = {
