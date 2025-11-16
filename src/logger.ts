@@ -4,19 +4,19 @@
 export class Logger {
   private static isProduction = process.env.NODE_ENV === 'production';
 
-  static log(...args: any[]): void {
+  static log(...args: unknown[]): void {
     if (!Logger.isProduction) {
       console.log(...args);
     }
   }
 
-  static warn(...args: any[]): void {
+  static warn(...args: unknown[]): void {
     if (!Logger.isProduction) {
       console.warn(...args);
     }
   }
 
-  static error(...args: any[]): void {
+  static error(...args: unknown[]): void {
     // Errors should always be logged
     console.error(...args);
   }
