@@ -1,11 +1,15 @@
 {
 	"name": "obsidian-wordpress-reloaded",
 	"version": "1.1.1",
-	"description": "A plugin for publishing Obsidian documents to WordPress. Seamlessly sync your notes to WordPress blogs, supporting Markdown formatting, images, and custom publishing options. Maintain your content workflow within Obsidian while sharing with your WordPress audience.forked from https://github.com/devbean/obsidian-wordpress",
+	"description": "A plugin for publishing Obsidian documents to WordPress. Seamlessly sync your notes to WordPress blogs, supporting Markdown formatting, images, and custom publishing options. Maintain your content workflow within Obsidian while sharing with your WordPress audience. Forked from https://github.com/devbean/obsidian-wordpress",
 	"main": "main.js",
+	"packageManager": "pnpm@8.15.0",
 	"scripts": {
 		"dev": "node esbuild.config.mjs",
 		"build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",
+		"lint": "eslint src --ext .ts",
+		"lint:fix": "eslint src --ext .ts --fix",
+		"typecheck": "tsc -noEmit -skipLibCheck",
 		"release": "standard-version",
 		"release-test": "standard-version --dry-run",
 		"release-major": "standard-version --release-as major",
@@ -48,6 +52,7 @@
 		"typescript": "4.7.4"
 	},
 	"volta": {
-		"node": "16.20.2"
+		"node": "20.18.0",
+		"pnpm": "8.15.0"
 	}
 }
