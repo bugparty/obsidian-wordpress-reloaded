@@ -80,7 +80,9 @@ export function doClientPublish(
   if (profile) {
     const client = getWordPressClient(plugin, profile);
     if (client) {
-      client.publishPost(defaultPostParams).then();
+      client.publishPost(defaultPostParams).catch(err => {
+        showError(err);
+      });
     }
   } else {
     const noSuchProfileMessage = plugin.i18n.t('error_noSuchProfile', {
