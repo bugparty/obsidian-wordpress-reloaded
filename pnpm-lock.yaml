@@ -32,6 +32,9 @@ devDependencies:
   esbuild:
     specifier: 0.17.3
     version: 0.17.3
+  eslint:
+    specifier: ^8.57.1
+    version: 8.57.1
   eslint-plugin-node:
     specifier: ^11.1.0
     version: 11.1.0(eslint@8.57.1)
