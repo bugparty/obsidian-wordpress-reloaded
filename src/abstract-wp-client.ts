@@ -228,11 +228,11 @@ export abstract class AbstractWordPressClient implements WordPressClient {
             }, auth);
             if (result.code === WordPressClientReturnCode.OK) {
               if(img.width && img.height){
-                  postParams.content = postParams.content.replace(img.original, `![[${result.data.url}|${img.width}x${img.height}]]`);
+                  postParams.content = postParams.content.replaceAll(img.original, `![[${result.data.url}|${img.width}x${img.height}]]`);
               }else if (img.width){
-                  postParams.content = postParams.content.replace(img.original, `![[${result.data.url}|${img.width}]]`);
+                  postParams.content = postParams.content.replaceAll(img.original, `![[${result.data.url}|${img.width}]]`);
               }else{
-                  postParams.content = postParams.content.replace(img.original, `![[${result.data.url}]]`);
+                  postParams.content = postParams.content.replaceAll(img.original, `![[${result.data.url}]]`);
               }
             } else {
               if (result.error.code === WordPressClientReturnCode.ServerInternalError) {
