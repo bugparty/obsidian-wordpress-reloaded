@@ -1,7 +1,8 @@
 import MarkdownIt from 'markdown-it';
-import Token from 'markdown-it/lib/token';
 import { trim } from 'lodash-es';
 import { Logger } from './logger';
+
+type Token = MarkdownIt.Token;
 
 const tokenType = 'ob_img';
 
