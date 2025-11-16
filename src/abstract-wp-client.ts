@@ -16,7 +16,6 @@ import {
   isPromiseFulfilledResult,
   isValidUrl,
   openWithBrowser, processFile,
-  SafeAny,
   showError,
 } from './utils';
 import { WpProfile } from './wp-profile';
@@ -105,12 +104,12 @@ export abstract class AbstractWordPressClient implements WordPressClient {
 
   private async checkExistingProfile(matterData: MatterData) {
     const { profileName } = matterData;
-    const isProfileNameMismatch = profileName && profileName !== this.profile.name;
+    const isProfileNameMismatch = typeof profileName === 'string' && profileName !== this.profile.name;
     if (isProfileNameMismatch) {
       const confirm = await openConfirmModal({
         message: this.plugin.i18n.t('error_profileNotMatch'),
         cancelText: this.plugin.i18n.t('profileNotMatch_useOld', {
-          profileName: matterData.profileName
+          profileName: String(matterData.profileName)
         }),
         confirmText: this.plugin.i18n.t('profileNotMatch_useNew', {
           profileName: this.profile.name
@@ -173,7 +172,7 @@ export abstract class AbstractWordPressClient implements WordPressClient {
         }
 
         if (this.plugin.settings.rememberLastSelectedCategories) {
-          this.profile.lastSelectedCategories = (result.data as SafeAny).categories;
+          this.profile.lastSelectedCategories = result.data.categories;
           await this.plugin.saveSettings();
         }
 
@@ -288,14 +287,14 @@ export abstract class AbstractWordPressClient implements WordPressClient {
         });
       } else {
         const categories = await this.getCategories(auth);
-        const selectedCategories = matterData.categories as number[]
+        const selectedCategories = this.getNumberArrayFromMatterData(matterData.categories)
           ?? this.profile.lastSelectedCategories
           ?? [ 1 ];
         const postTypes = await this.getPostTypes(auth);
         if (postTypes.length === 0) {
           postTypes.push(PostTypeConst.Post);
         }
-        const selectedPostType = matterData.postType ?? PostTypeConst.Post;
+        const selectedPostType = (typeof matterData.postType === 'string' ? matterData.postType : undefined) ?? PostTypeConst.Post;
         result = await new Promise(resolve => {
           const publishModal = new WpPublishModal(
             this.plugin,
@@ -359,14 +358,14 @@ export abstract class AbstractWordPressClient implements WordPressClient {
   ): WordPressPostParams {
     const postParams = { ...params };
     postParams.title = noteTitle;
-    if (matterData.title) {
+    if (matterData.title && typeof matterData.title === 'string') {
       postParams.title = matterData.title;
     }
-    if (matterData.postId) {
+    if (matterData.postId && typeof matterData.postId === 'string') {
       postParams.postId = matterData.postId;
     }
-    postParams.profileName = matterData.profileName ?? WP_DEFAULT_PROFILE_NAME;
-    if (matterData.postType) {
+    postParams.profileName = (typeof matterData.profileName === 'string' ? matterData.profileName : undefined) ?? WP_DEFAULT_PROFILE_NAME;
+    if (matterData.postType && typeof matterData.postType === 'string') {
       postParams.postType = matterData.postType;
     } else {
       // if there is no post type in matter-data, assign it as 'post'
@@ -375,13 +374,28 @@ export abstract class AbstractWordPressClient implements WordPressClient {
     if (postParams.postType === PostTypeConst.Post) {
       // only 'post' supports categories and tags
       if (matterData.categories) {
-        postParams.categories = matterData.categories as number[] ?? this.profile.lastSelectedCategories;
+        postParams.categories = this.getNumberArrayFromMatterData(matterData.categories) ?? this.profile.lastSelectedCategories;
       }
       if (matterData.tags) {
-        postParams.tags = matterData.tags as string[];
+        postParams.tags = this.getStringArrayFromMatterData(matterData.tags);
       }
     }
     return postParams;
+  }
+
+  private getNumberArrayFromMatterData(value: unknown): number[] | undefined {
+    if (!value) return undefined;
+    if (Array.isArray(value) && value.every(item => typeof item === 'number')) {
+      return value;
+    }
+    return undefined;
+  }
+
+  private getStringArrayFromMatterData(value: unknown): string[] {
+    if (Array.isArray(value) && value.every(item => typeof item === 'string')) {
+      return value;
+    }
+    return [];
   }
 
 }

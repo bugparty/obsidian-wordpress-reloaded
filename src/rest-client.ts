@@ -1,5 +1,5 @@
 import { request } from 'obsidian';
-import { getBoundary, SafeAny } from './utils';
+import { getBoundary } from './utils';
 import { FormItemNameMapper, FormItems, RestClientOptions } from './types';
 import { Logger } from './logger';
 
@@ -52,7 +52,7 @@ export class RestClient {
 
   async httpPost(
     path: string,
-    body: SafeAny,
+    body: FormItems | Record<string, unknown>,
     options: {
       headers?: Record<string, string>;
       formItemNameMapper?: FormItemNameMapper;
@@ -64,7 +64,7 @@ export class RestClient {
 
     const endpoint = `${this.href}/${realPath}`;
     const predefinedHeaders: Record<string, string> = {};
-    let requestBody: SafeAny;
+    let requestBody: ArrayBuffer | string;
     if (body instanceof FormItems) {
       const boundary = getBoundary();
       requestBody = await body.toArrayBuffer({

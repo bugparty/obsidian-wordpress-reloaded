@@ -11,7 +11,6 @@ import WordpressPlugin from './main';
 import { PostStatus, PostType, Term } from './wp-api';
 import { RestClient } from './rest-client';
 import { isArray, isFunction, isNumber, isObject, isString, template } from 'lodash-es';
-import { SafeAny } from './utils';
 import { WpProfile } from './wp-profile';
 import { FormItemNameMapper, FormItems, Media } from './types';
 import { formatISO } from 'date-fns';
@@ -70,7 +69,7 @@ export class WpRestClient extends AbstractWordPressClient {
     if (postParams.status === PostStatus.Future) {
       extra.date = formatISO(postParams.datetime ?? new Date());
     }
-    const resp: SafeAny = await this.client.httpPost(
+    const resp: unknown = await this.client.httpPost(
       url,
       {
         title,
@@ -114,7 +113,7 @@ export class WpRestClient extends AbstractWordPressClient {
   }
 
   async getPostTypes(certificate: WordPressAuthParams): Promise<PostType[]> {
-    const data: SafeAny = await this.client.httpGet(
+    const data: unknown = await this.client.httpGet(
       getUrl(this.context.endpoints?.getPostTypes, 'wp-json/wp/v2/types'),
       {
         headers: this.context.getHeaders(certificate)
@@ -147,7 +146,7 @@ export class WpRestClient extends AbstractWordPressClient {
   }
 
   async getTag(name: string, certificate: WordPressAuthParams): Promise<Term> {
-    const termResp: SafeAny = await this.client.httpGet(
+    const termResp: unknown = await this.client.httpGet(
       getUrl(this.context.endpoints?.getTag, 'wp-json/wp/v2/tags?number=1&search=<%= name %>', {
         name
       }),
@@ -175,7 +174,7 @@ export class WpRestClient extends AbstractWordPressClient {
       const formItems = new FormItems();
       formItems.append('file', media);
 
-      const response: SafeAny = await this.client.httpPost(
+      const response: unknown = await this.client.httpPost(
         getUrl(this.context.endpoints?.uploadFile, 'wp-json/wp/v2/media'),
         formItems,
         {
@@ -190,13 +189,13 @@ export class WpRestClient extends AbstractWordPressClient {
         data: result,
         response
       };
-    } catch (e: SafeAny) {
+    } catch (e: unknown) {
       Logger.error('uploadMedia', e);
       return {
         code: WordPressClientReturnCode.Error,
         error: {
           code: WordPressClientReturnCode.ServerInternalError,
-          message: e.toString()
+          message: String(e)
         },
         response: undefined
       };
@@ -232,17 +231,17 @@ interface WpRestClientContext {
   name: string;
 
   responseParser: {
-    toWordPressPublishResult: (postParams: WordPressPostParams, response: SafeAny) => WordPressPublishResult;
+    toWordPressPublishResult: (postParams: WordPressPostParams, response: unknown) => WordPressPublishResult;
     /**
      * Convert response to `WordPressMediaUploadResult`.
      *
      * If there is any error, throw new error directly.
      * @param response response from remote server
      */
-    toWordPressMediaUploadResult: (response: SafeAny) => WordPressMediaUploadResult;
-    toTerms: (response: SafeAny) => Term[];
-    toTerm: (response: SafeAny) => Term;
-    toPostTypes: (response: SafeAny) => PostType[];
+    toWordPressMediaUploadResult: (response: unknown) => WordPressMediaUploadResult;
+    toTerms: (response: unknown) => Term[];
+    toTerm: (response: unknown) => Term;
+    toPostTypes: (response: unknown) => PostType[];
   };
 
   endpoints?: Partial<WpRestEndpoint>;
@@ -265,33 +264,42 @@ class WpRestClientCommonContext implements WpRestClientContext {
   }
 
   responseParser = {
-    toWordPressPublishResult: (postParams: WordPressPostParams, response: SafeAny): WordPressPublishResult => {
-      if (response.id) {
+    toWordPressPublishResult: (postParams: WordPressPostParams, response: unknown): WordPressPublishResult => {
+      if (typeof response === 'object' && response !== null && 'id' in response) {
+        const resp = response as { id: unknown; categories?: unknown };
         return {
-          postId: postParams.postId ?? response.id,
-          categories: postParams.categories ?? response.categories
+          postId: postParams.postId ?? String(resp.id),
+          categories: postParams.categories ?? (Array.isArray(resp.categories) ? resp.categories : [])
         }
       }
-      throw new Error('xx');
+      throw new Error('Invalid response format');
     },
-    toWordPressMediaUploadResult: (response: SafeAny): WordPressMediaUploadResult => {
-      return {
-        url: response.source_url
-      };
+    toWordPressMediaUploadResult: (response: unknown): WordPressMediaUploadResult => {
+      if (typeof response === 'object' && response !== null && 'source_url' in response) {
+        return {
+          url: String((response as { source_url: unknown }).source_url)
+        };
+      }
+      throw new Error('Invalid response format');
     },
-    toTerms: (response: SafeAny): Term[] => {
+    toTerms: (response: unknown): Term[] => {
       if (isArray(response)) {
         return response as Term[];
       }
       return [];
     },
-    toTerm: (response: SafeAny): Term => ({
-      ...response,
-      id: response.id
-    }),
-    toPostTypes: (response: SafeAny): PostType[] => {
-      if (isObject(response)) {
-        return Object.keys(response);
+    toTerm: (response: unknown): Term => {
+      if (typeof response === 'object' && response !== null && 'id' in response) {
+        return {
+          ...response as Record<string, unknown>,
+          id: (response as { id: unknown }).id
+        } as Term;
+      }
+      throw new Error('Invalid response format');
+    },
+    toPostTypes: (response: unknown): PostType[] => {
+      if (isObject(response) && response !== null) {
+        return Object.keys(response as object);
       }
       return [];
     }
@@ -354,46 +362,79 @@ export class WpRestClientWpComOAuth2Context implements WpRestClientContext {
   }
 
   responseParser = {
-    toWordPressPublishResult: (postParams: WordPressPostParams, response: SafeAny): WordPressPublishResult => {
-      if (response.ID) {
+    toWordPressPublishResult: (postParams: WordPressPostParams, response: unknown): WordPressPublishResult => {
+      if (typeof response === 'object' && response !== null && 'ID' in response) {
+        const resp = response as { ID: unknown; categories?: unknown };
+        const categories = postParams.categories ?? (
+          typeof resp.categories === 'object' && resp.categories !== null
+            ? Object.values(resp.categories).map((cat: unknown) => {
+                if (typeof cat === 'object' && cat !== null && 'ID' in cat) {
+                  return (cat as { ID: unknown }).ID;
+                }
+                return cat;
+              })
+            : []
+        );
         return {
-          postId: postParams.postId ?? response.ID,
-          categories: postParams.categories ?? Object.values(response.categories).map((cat: SafeAny) => cat.ID)
+          postId: postParams.postId ?? String(resp.ID),
+          categories: categories as number[]
         };
       }
-      throw new Error('xx');
+      throw new Error('Invalid response format');
     },
-    toWordPressMediaUploadResult: (response: SafeAny): WordPressMediaUploadResult => {
-      if (response.media.length > 0) {
-        const media = response.media[0];
-        return {
-          url: media.link
-        };
-      } else if (response.errors) {
-        throw new Error(response.errors.error.message);
+    toWordPressMediaUploadResult: (response: unknown): WordPressMediaUploadResult => {
+      if (typeof response === 'object' && response !== null) {
+        const resp = response as { media?: unknown[]; errors?: { error?: { message?: unknown } } };
+        if (Array.isArray(resp.media) && resp.media.length > 0) {
+          const media = resp.media[0];
+          if (typeof media === 'object' && media !== null && 'link' in media) {
+            return {
+              url: String((media as { link: unknown }).link)
+            };
+          }
+        } else if (resp.errors?.error?.message) {
+          throw new Error(String(resp.errors.error.message));
+        }
       }
       throw new Error('Upload failed');
     },
-    toTerms: (response: SafeAny): Term[] => {
-      if (isNumber(response.found)) {
-        return response
-          .categories
-          .map((it: Term & { ID: number; }) => ({
-            ...it,
-            id: String(it.ID)
-          }));
+    toTerms: (response: unknown): Term[] => {
+      if (typeof response === 'object' && response !== null && 'found' in response) {
+        const resp = response as { found: unknown; categories?: unknown[] };
+        if (isNumber(resp.found) && Array.isArray(resp.categories)) {
+          return resp.categories.map((it: unknown) => {
+            if (typeof it === 'object' && it !== null && 'ID' in it) {
+              return {
+                ...it as Record<string, unknown>,
+                id: String((it as { ID: unknown }).ID)
+              } as Term;
+            }
+            return it as Term;
+          });
+        }
       }
       return [];
     },
-    toTerm: (response: SafeAny): Term => ({
-      ...response,
-      id: response.ID
-    }),
-    toPostTypes: (response: SafeAny): PostType[] => {
-      if (isNumber(response.found)) {
-        return response
-          .post_types
-          .map((it: { name: string }) => (it.name));
+    toTerm: (response: unknown): Term => {
+      if (typeof response === 'object' && response !== null && 'ID' in response) {
+        return {
+          ...response as Record<string, unknown>,
+          id: (response as { ID: unknown }).ID
+        } as Term;
+      }
+      throw new Error('Invalid response format');
+    },
+    toPostTypes: (response: unknown): PostType[] => {
+      if (typeof response === 'object' && response !== null && 'found' in response) {
+        const resp = response as { found: unknown; post_types?: unknown };
+        if (isNumber(resp.found) && Array.isArray(resp.post_types)) {
+          return resp.post_types.map((it: unknown) => {
+            if (typeof it === 'object' && it !== null && 'name' in it) {
+              return String((it as { name: unknown }).name);
+            }
+            return String(it);
+          });
+        }
       }
       return [];
     }

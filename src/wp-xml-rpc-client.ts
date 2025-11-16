@@ -10,7 +10,7 @@ import {
 import { XmlRpcClient } from './xmlrpc-client';
 import { AbstractWordPressClient } from './abstract-wp-client';
 import { PostStatus, PostType, PostTypeConst, Term } from './wp-api';
-import { SafeAny, showError } from './utils';
+import { showError } from './utils';
 import { WpProfile } from './wp-profile';
 import { Media } from './types';
 
@@ -125,10 +125,18 @@ export class WpXmlRpcClient extends AbstractWordPressClient {
       showError(fault);
       throw new Error(fault);
     }
-    return (response as SafeAny).map((it: SafeAny) => ({
-      ...it,
-      id: it.term_id
-    })) ?? [];
+    if (!Array.isArray(response)) {
+      return [];
+    }
+    return response.map((it: unknown) => {
+      if (typeof it === 'object' && it !== null && 'term_id' in it) {
+        return {
+          ...it as Record<string, unknown>,
+          id: (it as { term_id: unknown }).term_id
+        };
+      }
+      return it;
+    }) as Term[];
   }
 
   async getPostTypes(certificate: WordPressAuthParams): Promise<PostType[]> {
@@ -142,7 +150,10 @@ export class WpXmlRpcClient extends AbstractWordPressClient {
       showError(fault);
       throw new Error(fault);
     }
-    return Object.keys(response as SafeAny) ?? [];
+    if (typeof response === 'object' && response !== null) {
+      return Object.keys(response);
+    }
+    return [];
   }
 
   async validateUser(certificate: WordPressAuthParams): Promise<WordPressClientResult<boolean>> {
@@ -205,7 +216,9 @@ export class WpXmlRpcClient extends AbstractWordPressClient {
       return {
         code: WordPressClientReturnCode.OK,
         data: {
-          url: (response as SafeAny).url
+          url: typeof response === 'object' && response !== null && 'url' in response
+            ? String((response as { url: unknown }).url)
+            : ''
         },
         response
       };

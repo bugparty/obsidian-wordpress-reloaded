@@ -17,15 +17,19 @@ import { Logger } from './logger';
 export default class WordpressPlugin extends Plugin {
 
   #settings: WordpressPluginSettings | undefined;
-  get settings() {
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    return this.#settings!;
+  get settings(): WordpressPluginSettings {
+    if (!this.#settings) {
+      throw new Error('Settings not initialized. Call loadSettings() first.');
+    }
+    return this.#settings;
   }
 
   #i18n: I18n | undefined;
-  get i18n() {
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    return this.#i18n!;
+  get i18n(): I18n {
+    if (!this.#i18n) {
+      throw new Error('I18n not initialized. Call onload() first.');
+    }
+    return this.#i18n;
   }
 
   private ribbonWpIcon: HTMLElement | null = null;

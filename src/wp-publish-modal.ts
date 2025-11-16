@@ -7,7 +7,6 @@ import { MatterData } from './types';
 import { ConfirmCode, openConfirmModal } from './confirm-modal';
 import { AbstractModal } from './abstract-modal';
 import IMask, { DynamicMaskType, InputMask } from 'imask';
-import { SafeAny } from './utils';
 import { format, parse } from 'date-fns';
 
 
@@ -110,12 +109,13 @@ export class WpPublishModal extends AbstractModal {
           if (this.dateInputMask) {
             this.dateInputMask.destroy();
           }
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           this.dateInputMask = IMask(text.inputEl, [
             {
               ...dateMask,
               pattern: dateFormat,
               blocks: dateBlocks,
-              format: (date: SafeAny) => format(date, dateFormat),
+              format: (date: Date) => format(date, dateFormat),
               parse: (str: string) => parse(str, dateFormat, new Date())
             },
             {
@@ -139,13 +139,13 @@ export class WpPublishModal extends AbstractModal {
                   to: 59,
                 },
               },
-              format: (date: SafeAny) => format(date, dateTimeFormat),
+              format: (date: Date) => format(date, dateTimeFormat),
               parse: (str: string) => parse(str, dateTimeFormat, new Date())
             }
-          ]);
+          ] as any);
 
           this.dateInputMask.on('accept', () => {
-            if (this.dateInputMask) {
+            if (this.dateInputMask && this.dateInputMask.masked) {
               if (this.dateInputMask.masked.isComplete) {
                 text.inputEl.classList.remove('obsidian-wordpress-reloaded-date-input-invalid');
                 params.datetime = this.dateInputMask.typedValue;
