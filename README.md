@@ -62,9 +62,36 @@ Traditionally, it is done by installing plugins. WordPress 5.6 was introduced
 application passwords to do similar things. So if you are OK with WordPress 5.6,
 application passwords is preferred as no plugin in needed.
 
+## Documentation
+
+- **[User Guide](docs/index.md)** - Complete guide for using the plugin
+- **[Architecture](ARCHITECTURE.md)** - Technical architecture and design
+- **[API Documentation](docs/api/)** - Developer API reference
+- **[Development Guide](docs/development.md)** - Local development setup
+- **[Contributing Guide](CONTRIBUTING.md)** - How to contribute
+
 ## Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+Contributions are welcome! Please read our [Contributing Guide](CONTRIBUTING.md) before submitting a Pull Request.
+
+### Quick Start for Contributors
+
+```bash
+# Clone and setup
+git clone https://github.com/bugparty/obsidian-wordpress-reloaded.git
+cd obsidian-wordpress-reloaded
+pnpm install
+
+# Development mode
+pnpm run dev
+
+# Run checks
+pnpm run lint
+pnpm run typecheck
+pnpm run build
+```
+
+See [Development Guide](docs/development.md) for detailed instructions.
 
 ## Credits
 
