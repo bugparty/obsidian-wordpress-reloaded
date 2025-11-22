@@ -77,9 +77,6 @@ export default class WordpressPlugin extends Plugin {
     this.addSettingTab(new WordpressSettingTab(this));
   }
 
-  onunload() {
-  }
-
   async loadSettings() {
     this.#settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
     const { needUpgrade, settings } = await upgradeSettings(this.#settings, SettingsVersion.V2);

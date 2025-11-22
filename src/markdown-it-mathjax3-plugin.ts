@@ -132,7 +132,7 @@ function mathInline(state: StateInline, silent: boolean) {
     }
 
     // Even number of escapes, potential closing delimiter found
-    if ((match - pos) % 2 == 1) {
+    if ((match - pos) % 2 === 1) {
       break;
     }
     match += 1;

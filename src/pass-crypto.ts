@@ -5,8 +5,6 @@ const FORMAT_JWK = 'jwk';
 
 export class PassCrypto {
 
-  constructor() { }
-
   canUse(): boolean {
     return !isNil(crypto)
       && !isNil(crypto.subtle)
