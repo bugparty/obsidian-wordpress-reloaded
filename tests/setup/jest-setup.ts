@@ -16,18 +16,19 @@ if (!global.crypto || !global.crypto.subtle) {
   });
 }
 
-// Mock btoa and atob for Node.js environment with proper unicode support
+// Mock btoa and atob for Node.js environment
+// These must match browser behavior exactly for crypto operations
 if (typeof global.btoa === 'undefined') {
   global.btoa = (str: string): string => {
-    // First convert to UTF-8 bytes, then to base64
-    return Buffer.from(str, 'utf-8').toString('base64');
+    // Convert binary string to base64
+    return Buffer.from(str, 'binary').toString('base64');
   };
 }
 
 if (typeof global.atob === 'undefined') {
   global.atob = (str: string): string => {
-    // Decode from base64 to UTF-8 string
-    return Buffer.from(str, 'base64').toString('utf-8');
+    // Decode from base64 to binary string (not UTF-8!)
+    return Buffer.from(str, 'base64').toString('binary');
   };
 }
 
