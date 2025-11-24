@@ -11,8 +11,6 @@ import { format } from 'date-fns';
 import { MatterData } from './types';
 import { MarkdownItCommentPluginInstance } from './markdown-it-comment-plugin';
 
-export type SafeAny = any; // eslint-disable-line @typescript-eslint/no-explicit-any
-
 export function openWithBrowser(url: string, queryParams: Record<string, undefined|number|string> = {}): void {
   window.open(`${url}?${generateQueryString(queryParams)}`);
 }
@@ -25,8 +23,8 @@ export function generateQueryString(params: Record<string, undefined|number|stri
   ).toString();
 }
 
-export function isPromiseFulfilledResult<T>(obj: SafeAny): obj is PromiseFulfilledResult<T> {
-  return !!obj && obj.status === 'fulfilled' && obj.value;
+export function isPromiseFulfilledResult<T>(obj: unknown): obj is PromiseFulfilledResult<T> {
+  return !!obj && typeof obj === 'object' && 'status' in obj && (obj as { status: unknown }).status === 'fulfilled' && 'value' in obj && !!(obj as { value: unknown }).value;
 }
 
 export function setupMarkdownParser(settings: WordpressPluginSettings): void {
@@ -104,7 +102,7 @@ export function showError<T>(error: unknown): WordPressClientResult<T> {
   } else if (error instanceof Error) {
     errorMessage = error.message;
   } else {
-    errorMessage = (error as SafeAny).toString();
+    errorMessage = String(error);
   }
   new Notice(errorMessage, ERROR_NOTICE_TIMEOUT);
   return {

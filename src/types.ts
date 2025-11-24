@@ -1,11 +1,10 @@
-import { SafeAny } from './utils';
 import { isArray, isString } from 'lodash-es';
 
 export interface MarkdownItPlugin {
-  updateOptions: (opts: SafeAny) => void;
+  updateOptions: (opts: Record<string, unknown>) => void;
 }
 
-export type MatterData = { [p: string]: SafeAny };
+export type MatterData = Record<string, unknown>;
 
 export interface Media {
   mimeType: string;
@@ -27,13 +26,13 @@ export interface XmlRpcOptions {
   xmlRpcPath: string;
 }
 
-export function isMedia(obj: SafeAny): obj is Media {
+export function isMedia(obj: unknown): obj is Media {
   return (
     typeof obj === 'object'
     && obj !== null
-    && 'mimeType' in obj && typeof obj.mimeType === 'string'
-    && 'fileName' in obj && typeof obj.fileName === 'string'
-    && 'content' in obj && obj.content instanceof ArrayBuffer
+    && 'mimeType' in obj && typeof (obj as { mimeType: unknown }).mimeType === 'string'
+    && 'fileName' in obj && typeof (obj as { fileName: unknown }).fileName === 'string'
+    && 'content' in obj && (obj as { content: unknown }).content instanceof ArrayBuffer
   );
 }
 
@@ -46,15 +45,16 @@ export function isMedia(obj: SafeAny): obj is Media {
 export type FormItemNameMapper = (name: string, isArray: boolean) => string;
 
 export class FormItems {
-  #formData: Record<string, SafeAny> = {};
+  #formData: Record<string, string | Media | Array<string | Media>> = {};
 
   append(name: string, data: string): FormItems;
   append(name: string, data: Media): FormItems;
   append(name: string, data: string | Media): FormItems {
     const existing = this.#formData[name];
     if (existing) {
-      this.#formData[name] = [ existing ];
-      this.#formData[name].push(data);
+      const arr = Array.isArray(existing) ? existing : [existing];
+      arr.push(data);
+      this.#formData[name] = arr;
     } else {
       this.#formData[name] = data;
     }

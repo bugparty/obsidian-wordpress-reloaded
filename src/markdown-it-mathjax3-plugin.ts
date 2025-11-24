@@ -10,7 +10,6 @@ import { RegisterHTMLHandler } from 'mathjax-full/js/handlers/html';
 import { AssistiveMmlHandler } from 'mathjax-full/js/a11y/assistive-mml';
 import { mathjax } from 'mathjax-full/js/mathjax';
 import juice from 'juice';
-import { SafeAny } from './utils';
 import { MathJaxOutputType } from './plugin-settings';
 
 const inlineTokenType = 'math_inline';
@@ -64,7 +63,8 @@ function renderMath(content: string, convertOptions: ConvertOptions): string {
     AssistiveMmlHandler(handler);
     const mathDocument = mathjax.document(content, documentOptions);
     const html = adaptor.outerHTML(mathDocument.convert(content, convertOptions));
-    const stylesheet = adaptor.outerHTML(documentOptions.OutputJax.styleSheet(mathDocument) as SafeAny);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const stylesheet = adaptor.outerHTML(documentOptions.OutputJax.styleSheet(mathDocument) as any);
     return juice(html + stylesheet);
   } else {
     if (convertOptions.display) {

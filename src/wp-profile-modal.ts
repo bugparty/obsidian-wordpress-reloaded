@@ -5,7 +5,7 @@ import { EventType, WP_OAUTH2_REDIRECT_URI } from './consts';
 import { WordPressClientReturnCode } from './wp-client';
 import { generateCodeVerifier, OAuth2Client, WordPressOAuth2Token } from './oauth2-client';
 import { AppState } from './app-state';
-import { isValidUrl, SafeAny, showError } from './utils';
+import { isValidUrl, showError } from './utils';
 import { ApiType } from './plugin-settings';
 import { AbstractModal } from './abstract-modal';
 import { Logger } from './logger';
@@ -73,10 +73,10 @@ class WpProfileModal extends AbstractModal {
     });
   }
 
-  #onTokenGot = (tokenData: SafeAny) => {
+  #onTokenGot = (tokenData: unknown) => {
     Logger.log('WpProfileModal.onTokenGot', tokenData);
     if (tokenData) {
-      this.profile.wpComOAuth2Token = tokenData;
+      this.profile.wpComOAuth2Token = tokenData as WordPressOAuth2Token;
       this.close();
       this.onSubmit?.(this.profile, this.atIndex);
     }
